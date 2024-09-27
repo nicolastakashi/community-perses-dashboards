@@ -27,7 +27,7 @@ func AddQueryDataSource(datasourceName string) query.Option {
 	return query.Datasource(datasourceName)
 }
 
-func AddClusterVariable(datasource, clusterLabelName string) dashboard.Option {
+func AddClusterVariable(datasource, clusterLabelName, matcher string) dashboard.Option {
 	if clusterLabelName == "" {
 		return func(builder *dashboard.Builder) error {
 			return nil
@@ -35,24 +35,25 @@ func AddClusterVariable(datasource, clusterLabelName string) dashboard.Option {
 	}
 	return dashboard.AddVariable("cluster",
 		listVar.List(
-			labelValuesVar.PrometheusLabelValues("cluster",
-				labelValuesVar.Matchers("prometheus_build_info{job='$job'}"),
+			labelValuesVar.PrometheusLabelValues(clusterLabelName,
+				labelValuesVar.Matchers(matcher),
 				AddVariableDatasource(datasource),
 			),
-			listVar.DisplayName("cluster"),
+			listVar.DisplayName(clusterLabelName),
 		),
 	)
 }
 
 func LabelsSetPromQL(query, labelMatchType, name, value string) string {
-	if name == "" || value == "" {
-		return query
-	}
-
 	expr, err := parser.ParseExpr(query)
 	if err != nil {
 		return ""
 	}
+
+	if name == "" || value == "" {
+		return expr.Pretty(0)
+	}
+
 	var matchType labels.MatchType
 	switch labelMatchType {
 	case parser.ItemType(parser.EQL).String():

@@ -28,7 +28,7 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 				listVar.DisplayName("job"),
 			),
 		),
-		dashboards.AddClusterVariable(datasource, clusterLabelName),
+		dashboards.AddClusterVariable(datasource, clusterLabelName, "prometheus_build_info"),
 		dashboard.AddVariable("instance",
 			listVar.List(
 				labelValuesVar.PrometheusLabelValues("instance",
