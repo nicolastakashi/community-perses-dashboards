@@ -28,15 +28,7 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 				listVar.DisplayName("job"),
 			),
 		),
-		dashboard.AddVariable("cluster",
-			listVar.List(
-				labelValuesVar.PrometheusLabelValues("cluster",
-					labelValuesVar.Matchers("prometheus_build_info{job='$job'}"),
-					dashboards.AddVariableDatasource(datasource),
-				),
-				listVar.DisplayName("cluster"),
-			),
-		),
+		dashboards.AddClusterVariable(datasource, clusterLabelName),
 		dashboard.AddVariable("instance",
 			listVar.List(
 				labelValuesVar.PrometheusLabelValues("instance",
@@ -75,7 +67,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("count by (job, instance, version) (prometheus_build_info{job=~'$job', instance=~'$instance'})",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("count by (job, instance, version) (prometheus_build_info{job=~'$job', instance=~'$instance'})", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 					),
 				),
@@ -97,7 +90,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("sum(rate(prometheus_target_sync_length_seconds_sum{job=~'$job',instance=~'$instance'}[5m])) by (job, scrape_job, instance)",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("sum(rate(prometheus_target_sync_length_seconds_sum{job=~'$job',instance=~'$instance'}[5m])) by (job, scrape_job, instance)", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{job}}:{{instance}}:{{scrape_job}}"),
 					),
@@ -111,7 +105,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("sum by (job, instance) (prometheus_sd_discovered_targets{job=~'$job',instance=~'$instance'})",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("sum by (job, instance) (prometheus_sd_discovered_targets{job=~'$job',instance=~'$instance'})", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{job}}:{{instance}}"),
 					),
@@ -134,7 +129,12 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("rate(prometheus_target_interval_length_seconds_sum{job=~'$job',instance=~'$instance'}[5m]) / rate(prometheus_target_interval_length_seconds_count{job=~'$job',instance=~'$instance'}[5m])",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("rate(prometheus_target_interval_length_seconds_sum{job=~'$job',instance=~'$instance'}[5m]) / rate(prometheus_target_interval_length_seconds_count{job=~'$job',instance=~'$instance'}[5m])",
+							"=",
+							clusterLabelName,
+							"$cluster",
+						),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{job}}:{{instance}} {{interval}} configured"),
 					),
@@ -148,31 +148,36 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_body_size_limit_total{job=~'$job',instance=~'$instance'}[1m]))",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_body_size_limit_total{job=~'$job',instance=~'$instance'}[1m]))", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("exceeded body size limit: {{job}} {{instance}}"),
 					),
 				),
 				panel.AddQuery(
-					query.PromQL("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_sample_limit_total{job=~'$job',instance=~'$instance'}[1m]))",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_sample_limit_total{job=~'$job',instance=~'$instance'}[1m]))", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("exceeded sample limit: {{job}} {{instance}}"),
 					),
 				),
 				panel.AddQuery(
-					query.PromQL("sum by (job, instance) (rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=~'$job',instance=~'$instance'}[1m]))",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("sum by (job, instance) (rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=~'$job',instance=~'$instance'}[1m]))", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("duplicate timestamp: {{job}} {{instance}}"),
 					),
 				),
 				panel.AddQuery(
-					query.PromQL("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_bounds_total{job=~'$job',instance=~'$instance'}[1m]))",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_bounds_total{job=~'$job',instance=~'$instance'}[1m]))", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("out of bounds: {{job}} {{instance}}"),
 					),
 				),
 				panel.AddQuery(
-					query.PromQL("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_order_total{job=~'$job',instance=~'$instance'}[1m]))",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_order_total{job=~'$job',instance=~'$instance'}[1m]))", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("out of order: {{job}} {{instance}}"),
 					),
@@ -186,7 +191,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("rate(prometheus_tsdb_head_samples_appended_total{job=~'$job',instance=~'$instance'}[5m])",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("rate(prometheus_tsdb_head_samples_appended_total{job=~'$job',instance=~'$instance'}[5m])", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{job}} {{instance}}"),
 					),
@@ -204,7 +210,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("prometheus_tsdb_head_series{job=~'$job',instance=~'$instance'}",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("prometheus_tsdb_head_series{job=~'$job',instance=~'$instance'}", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{job}} {{instance}} head series"),
 					),
@@ -218,7 +225,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("prometheus_tsdb_head_chunks{job=~'$job',instance=~'$instance'}",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("prometheus_tsdb_head_chunks{job=~'$job',instance=~'$instance'}", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{job}} {{instance}} head chunks"),
 					),
@@ -236,7 +244,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("rate(prometheus_engine_query_duration_seconds_count{job=~'$job',instance=~'$instance',slice='inner_eval'}[5m])",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("rate(prometheus_engine_query_duration_seconds_count{job=~'$job',instance=~'$instance',slice='inner_eval'}[5m])", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{job}} {{instance}}"),
 					),
@@ -255,7 +264,8 @@ func BuildPrometheusOverview(exec sdk.Exec, project string, datasource string, c
 					}),
 				),
 				panel.AddQuery(
-					query.PromQL("max by (slice) (prometheus_engine_query_duration_seconds{quantile='0.9', job=~'$job',instance=~'$instance'})",
+					query.PromQL(
+						dashboards.LabelsSetPromQL("max by (slice) (prometheus_engine_query_duration_seconds{quantile='0.9', job=~'$job',instance=~'$instance'})", "=", clusterLabelName, "$cluster"),
 						dashboards.AddQueryDataSource(datasource),
 						query.SeriesNameFormat("{{slice}}"),
 					),
