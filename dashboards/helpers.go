@@ -27,7 +27,7 @@ func AddQueryDataSource(datasourceName string) query.Option {
 	return query.Datasource(datasourceName)
 }
 
-func AddClusterVariable(datasource, clusterLabelName string) dashboard.Option {
+func AddClusterVariable(datasource, clusterLabelName, matcher string) dashboard.Option {
 	if clusterLabelName == "" {
 		return func(builder *dashboard.Builder) error {
 			return nil
@@ -36,7 +36,7 @@ func AddClusterVariable(datasource, clusterLabelName string) dashboard.Option {
 	return dashboard.AddVariable("cluster",
 		listVar.List(
 			labelValuesVar.PrometheusLabelValues("cluster",
-				labelValuesVar.Matchers("prometheus_build_info{job='$job'}"),
+				labelValuesVar.Matchers(matcher),
 				AddVariableDatasource(datasource),
 			),
 			listVar.DisplayName("cluster"),
