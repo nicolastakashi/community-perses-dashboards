@@ -1,0 +1,8 @@
+version: "3"
+services:
+  perses:
+    image: persesdev/perses
+    container_name: perses
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
