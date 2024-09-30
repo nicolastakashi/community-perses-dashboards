@@ -21,5 +21,6 @@ func main() {
 	flag.Parse()
 	exec := sdk.NewExec()
 
-	prometheus.BuildPrometheusOverview(exec, project, datasource, clusterLabelName)
+	// prometheus.BuildPrometheusOverview(exec, project, datasource, clusterLabelName)
+	prometheus.BuildPrometheusRemoteWrite(exec, project, datasource, clusterLabelName)
 }
