@@ -1,7 +1,8 @@
 package prometheus
 
 import (
-	"github.com/nicolastakashi/community-perses-dashboards/dashboards"
+	"github.com/nicolastakashi/community-perses-dashboards/internal/dashboards"
+	"github.com/nicolastakashi/community-perses-dashboards/internal/promql"
 	"github.com/perses/perses/go-sdk/dashboard"
 	"github.com/perses/perses/go-sdk/panel"
 	panelgroup "github.com/perses/perses/go-sdk/panel-group"
@@ -20,7 +21,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 			listVar.List(
 				labelValuesVar.PrometheusLabelValues("instance",
 					labelValuesVar.Matchers(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_shards",
 							"=",
 							clusterLabelName,
@@ -36,7 +37,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 			listVar.List(
 				labelValuesVar.PrometheusLabelValues("url",
 					labelValuesVar.Matchers(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_shards{instance='$instance'}",
 							"=",
 							clusterLabelName,
@@ -60,7 +61,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"(prometheus_remote_storage_highest_timestamp_in_seconds{instance=~'$instance'} -  ignoring(remote_name, url) group_right(instance) (prometheus_remote_storage_queue_highest_sent_timestamp_seconds{instance=~'$instance', url='$url'} != 0))",
 							"=",
 							clusterLabelName,
@@ -80,7 +81,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"clamp_min(rate(prometheus_remote_storage_highest_timestamp_in_seconds{instance=~'$instance'}[5m])  - ignoring (remote_name, url) group_right(instance) rate(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{instance=~'$instance', url='$url'}[5m]), 0)",
 							"=",
 							clusterLabelName,
@@ -104,7 +105,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"rate(prometheus_remote_storage_samples_in_total{instance=~'$instance'}[5m]) - ignoring(remote_name, url) group_right(instance) (rate(prometheus_remote_storage_succeeded_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_total{instance=~'$instance', url='$url'}[5m])) - (rate(prometheus_remote_storage_dropped_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_dropped_total{instance=~'$instance', url='$url'}[5m]))",
 							"=",
 							clusterLabelName,
@@ -128,7 +129,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_shards{instance=~'$instance', url='$url'}",
 							"=",
 							clusterLabelName,
@@ -148,7 +149,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_shards_desired{instance=~'$instance', url='$url'}",
 							"=",
 							clusterLabelName,
@@ -168,7 +169,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_shards_max{instance=~'$instance', url='$url'}",
 							"=",
 							clusterLabelName,
@@ -188,7 +189,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_shards_min{instance=~'$instance', url='$url'}",
 							"=",
 							clusterLabelName,
@@ -212,7 +213,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_shard_capacity{instance=~'$instance', url='$url'}",
 							"=",
 							clusterLabelName,
@@ -232,7 +233,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_remote_storage_pending_samples{instance=~'$instance', url='$url'} or prometheus_remote_storage_samples_pending{instance=~'$instance', url='$url'}",
 							"=",
 							clusterLabelName,
@@ -256,7 +257,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_tsdb_wal_segment_current{instance=~'$instance'}",
 							"=",
 							clusterLabelName,
@@ -276,7 +277,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"prometheus_wal_watcher_current_segment{instance=~'$instance'}",
 							"=",
 							clusterLabelName,
@@ -300,7 +301,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"rate(prometheus_remote_storage_dropped_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_dropped_total{instance=~'$instance', url='$url'}[5m])",
 							"=",
 							clusterLabelName,
@@ -320,7 +321,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"rate(prometheus_remote_storage_failed_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_failed_total{instance=~'$instance', url='$url'}[5m])",
 							"=",
 							clusterLabelName,
@@ -340,7 +341,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"rate(prometheus_remote_storage_retried_samples_total{instance=~'$instance', url=~'$url'}[5m]) or rate(prometheus_remote_storage_samples_retried_total{instance=~'$instance', url=~'$url'}[5m])",
 							"=",
 							clusterLabelName,
@@ -360,7 +361,7 @@ func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelN
 				),
 				panel.AddQuery(
 					query.PromQL(
-						dashboards.LabelsSetPromQL(
+						promql.LabelsSetPromQL(
 							"rate(prometheus_remote_storage_enqueue_retries_total{instance=~'$instance', url=~'$url'}[5m])",
 							"=",
 							clusterLabelName,

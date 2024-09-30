@@ -1,47 +1,21 @@
-package dashboards
+package promql
 
 import (
-	"github.com/perses/perses/go-sdk/dashboard"
-	"github.com/perses/perses/go-sdk/prometheus/query"
-	labelValuesVar "github.com/perses/perses/go-sdk/prometheus/variable/label-values"
-	listVar "github.com/perses/perses/go-sdk/variable/list-variable"
 	"github.com/prometheus/prometheus/model/labels"
 	"github.com/prometheus/prometheus/promql/parser"
 )
 
-func AddVariableDatasource(datasourceName string) labelValuesVar.Option {
-	if datasourceName == "" {
-		return func(plugin *labelValuesVar.Builder) error {
-			return nil
-		}
-	}
-	return labelValuesVar.Datasource(datasourceName)
+type LabelMatcher struct {
+	Name  string
+	Value string
+	Type  string
 }
 
-func AddQueryDataSource(datasourceName string) query.Option {
-	if datasourceName == "" {
-		return func(plugin *query.Builder) error {
-			return nil
-		}
+func SetLabelMatchers(query string, labelMathers []LabelMatcher) string {
+	for _, l := range labelMathers {
+		query = LabelsSetPromQL(query, l.Type, l.Name, l.Value)
 	}
-	return query.Datasource(datasourceName)
-}
-
-func AddClusterVariable(datasource, clusterLabelName, matcher string) dashboard.Option {
-	if clusterLabelName == "" {
-		return func(builder *dashboard.Builder) error {
-			return nil
-		}
-	}
-	return dashboard.AddVariable("cluster",
-		listVar.List(
-			labelValuesVar.PrometheusLabelValues(clusterLabelName,
-				labelValuesVar.Matchers(matcher),
-				AddVariableDatasource(datasource),
-			),
-			listVar.DisplayName(clusterLabelName),
-		),
-	)
+	return query
 }
 
 func LabelsSetPromQL(query, labelMatchType, name, value string) string {
