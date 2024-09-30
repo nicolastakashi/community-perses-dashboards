@@ -1,0 +1,817 @@
+{
+    "kind": "Dashboard",
+    "metadata": {
+        "name": "prometheus-remote-write",
+        "createdAt": "0001-01-01T00:00:00Z",
+        "updatedAt": "0001-01-01T00:00:00Z",
+        "version": 0,
+        "project": "default"
+    },
+    "spec": {
+        "display": {
+            "name": "Prometheus / Remote Write"
+        },
+        "variables": [
+            {
+                "kind": "ListVariable",
+                "spec": {
+                    "display": {
+                        "name": "CX_ENV_ID",
+                        "hidden": false
+                    },
+                    "allowAllValue": false,
+                    "allowMultiple": false,
+                    "plugin": {
+                        "kind": "PrometheusLabelValuesVariable",
+                        "spec": {
+                            "datasource": {
+                                "kind": "PrometheusDatasource",
+                                "name": "Coralogix"
+                            },
+                            "labelName": "CX_ENV_ID",
+                            "matchers": [
+                                "prometheus_remote_storage_shards{}"
+                            ]
+                        }
+                    },
+                    "name": "cluster"
+                }
+            },
+            {
+                "kind": "ListVariable",
+                "spec": {
+                    "display": {
+                        "name": "instance",
+                        "hidden": false
+                    },
+                    "allowAllValue": false,
+                    "allowMultiple": false,
+                    "plugin": {
+                        "kind": "PrometheusLabelValuesVariable",
+                        "spec": {
+                            "datasource": {
+                                "kind": "PrometheusDatasource",
+                                "name": "Coralogix"
+                            },
+                            "labelName": "instance",
+                            "matchers": [
+                                "prometheus_remote_storage_shards{CX_ENV_ID=\"$cluster\"}"
+                            ]
+                        }
+                    },
+                    "name": "instance"
+                }
+            },
+            {
+                "kind": "ListVariable",
+                "spec": {
+                    "display": {
+                        "name": "url",
+                        "hidden": false
+                    },
+                    "allowAllValue": false,
+                    "allowMultiple": false,
+                    "plugin": {
+                        "kind": "PrometheusLabelValuesVariable",
+                        "spec": {
+                            "datasource": {
+                                "kind": "PrometheusDatasource",
+                                "name": "Coralogix"
+                            },
+                            "labelName": "url",
+                            "matchers": [
+                                "prometheus_remote_storage_shards{CX_ENV_ID=\"$cluster\",instance=\"$instance\"}"
+                            ]
+                        }
+                    },
+                    "name": "url"
+                }
+            }
+        ],
+        "panels": {
+            "0_0": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Highest Timestamp In vs. Highest Timestamp Sent"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "(\n    prometheus_remote_storage_highest_timestamp_in_seconds{CX_ENV_ID=\"$cluster\",instance=~\"$instance\"}\n  - ignoring (remote_name, url) group_right (instance)\n    (\n        prometheus_remote_storage_queue_highest_sent_timestamp_seconds{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}\n      !=\n        0\n    )\n)",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "0_1": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Rate[5m]"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "clamp_min(\n    rate(\n      prometheus_remote_storage_highest_timestamp_in_seconds{CX_ENV_ID=\"$cluster\",instance=~\"$instance\"}[5m]\n    )\n  - ignoring (remote_name, url) group_right (instance)\n    rate(\n      prometheus_remote_storage_queue_highest_sent_timestamp_seconds{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n    ),\n  0\n)",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "1_0": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Rate, in vs. succeeded or dropped [5m]"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "    rate(prometheus_remote_storage_samples_in_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\"}[5m])\n  - ignoring (remote_name, url) group_right (instance)\n    (\n        rate(\n          prometheus_remote_storage_succeeded_samples_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n        )\n      or\n        rate(\n          prometheus_remote_storage_samples_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n        )\n    )\n-\n  (\n      rate(\n        prometheus_remote_storage_dropped_samples_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n      )\n    or\n      rate(\n        prometheus_remote_storage_samples_dropped_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n      )\n  )",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "2_0": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Current Shards"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "prometheus_remote_storage_shards{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "2_1": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Desired Shards"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "prometheus_remote_storage_shards_desired{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "2_2": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Max Shards"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "prometheus_remote_storage_shards_max{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "2_3": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Min Shards"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "prometheus_remote_storage_shards_min{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "3_0": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Shard Capacity"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "prometheus_remote_storage_shard_capacity{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "3_1": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Pending Samples"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "  prometheus_remote_storage_pending_samples{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}\nor\n  prometheus_remote_storage_samples_pending{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "4_0": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "TSDB Current Segment"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "prometheus_tsdb_wal_segment_current{CX_ENV_ID=\"$cluster\",instance=~\"$instance\"}",
+                                        "seriesNameFormat": "{{instance}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "4_1": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Remote Write Current Segment"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "prometheus_wal_watcher_current_segment{CX_ENV_ID=\"$cluster\",instance=~\"$instance\"}",
+                                        "seriesNameFormat": "{{instance}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "5_0": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Dropped Samples"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "  rate(\n    prometheus_remote_storage_dropped_samples_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n  )\nor\n  rate(\n    prometheus_remote_storage_samples_dropped_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n  )",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "5_1": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Failed Samples"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "  rate(\n    prometheus_remote_storage_failed_samples_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n  )\nor\n  rate(\n    prometheus_remote_storage_samples_failed_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=\"$url\"}[5m]\n  )",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "5_2": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Retried Samples"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "  rate(\n    prometheus_remote_storage_retried_samples_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=~\"$url\"}[5m]\n  )\nor\n  rate(\n    prometheus_remote_storage_samples_retried_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=~\"$url\"}[5m]\n  )",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "5_3": {
+                "kind": "Panel",
+                "spec": {
+                    "display": {
+                        "name": "Retried Samples"
+                    },
+                    "plugin": {
+                        "kind": "TimeSeriesChart",
+                        "spec": {
+                            "legend": {
+                                "position": "bottom",
+                                "mode": "table"
+                            }
+                        }
+                    },
+                    "queries": [
+                        {
+                            "kind": "TimeSeriesQuery",
+                            "spec": {
+                                "plugin": {
+                                    "kind": "PrometheusTimeSeriesQuery",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "Coralogix"
+                                        },
+                                        "query": "rate(\n  prometheus_remote_storage_enqueue_retries_total{CX_ENV_ID=\"$cluster\",instance=~\"$instance\",url=~\"$url\"}[5m]\n)",
+                                        "seriesNameFormat": "{{instance}}:{{remote_name}}:{{url}}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "layouts": [
+            {
+                "kind": "Grid",
+                "spec": {
+                    "display": {
+                        "title": "Timestamps"
+                    },
+                    "items": [
+                        {
+                            "x": 0,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/0_0"
+                            }
+                        },
+                        {
+                            "x": 12,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/0_1"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "Grid",
+                "spec": {
+                    "display": {
+                        "title": "Samples"
+                    },
+                    "items": [
+                        {
+                            "x": 0,
+                            "y": 0,
+                            "width": 24,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/1_0"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "Grid",
+                "spec": {
+                    "display": {
+                        "title": "Shards"
+                    },
+                    "items": [
+                        {
+                            "x": 0,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/2_0"
+                            }
+                        },
+                        {
+                            "x": 12,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/2_1"
+                            }
+                        },
+                        {
+                            "x": 0,
+                            "y": 6,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/2_2"
+                            }
+                        },
+                        {
+                            "x": 12,
+                            "y": 6,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/2_3"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "Grid",
+                "spec": {
+                    "display": {
+                        "title": "Shard Details"
+                    },
+                    "items": [
+                        {
+                            "x": 0,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/3_0"
+                            }
+                        },
+                        {
+                            "x": 12,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/3_1"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "Grid",
+                "spec": {
+                    "display": {
+                        "title": "Segments"
+                    },
+                    "items": [
+                        {
+                            "x": 0,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/4_0"
+                            }
+                        },
+                        {
+                            "x": 12,
+                            "y": 0,
+                            "width": 12,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/4_1"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "Grid",
+                "spec": {
+                    "display": {
+                        "title": "Misc. Rates"
+                    },
+                    "items": [
+                        {
+                            "x": 0,
+                            "y": 0,
+                            "width": 6,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/5_0"
+                            }
+                        },
+                        {
+                            "x": 6,
+                            "y": 0,
+                            "width": 6,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/5_1"
+                            }
+                        },
+                        {
+                            "x": 12,
+                            "y": 0,
+                            "width": 6,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/5_2"
+                            }
+                        },
+                        {
+                            "x": 18,
+                            "y": 0,
+                            "width": 6,
+                            "height": 6,
+                            "content": {
+                                "$ref": "#/spec/panels/5_3"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "duration": "1h"
+    }
+}

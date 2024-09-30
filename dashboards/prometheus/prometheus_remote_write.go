@@ -2,7 +2,6 @@ package prometheus
 
 import (
 	"github.com/nicolastakashi/community-perses-dashboards/dashboards"
-	"github.com/perses/perses/go-sdk"
 	"github.com/perses/perses/go-sdk/dashboard"
 	"github.com/perses/perses/go-sdk/panel"
 	panelgroup "github.com/perses/perses/go-sdk/panel-group"
@@ -12,8 +11,8 @@ import (
 	listVar "github.com/perses/perses/go-sdk/variable/list-variable"
 )
 
-func BuildPrometheusRemoteWrite(exec sdk.Exec, project string, datasource string, clusterLabelName string) {
-	builder, buildErr := dashboard.New("prometheus-remote-write",
+func BuildPrometheusRemoteWrite(project string, datasource string, clusterLabelName string) (dashboard.Builder, error) {
+	return dashboard.New("prometheus-remote-write",
 		dashboard.Name("Prometheus / Remote Write"),
 		dashboard.ProjectName(project),
 		dashboards.AddClusterVariable(datasource, clusterLabelName, "prometheus_remote_storage_shards"),
@@ -374,6 +373,4 @@ func BuildPrometheusRemoteWrite(exec sdk.Exec, project string, datasource string
 			),
 		),
 	)
-
-	exec.BuildDashboard(builder, buildErr)
 }

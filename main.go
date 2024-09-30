@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/nicolastakashi/community-perses-dashboards/dashboards/prometheus"
-	"github.com/perses/perses/go-sdk"
+	dashboards "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards"
+	"github.com/perses/perses/go-sdk/dashboard"
 )
 
 var (
@@ -19,8 +21,19 @@ func main() {
 	flag.StringVar(&datasource, "datasource", "", "The datasource name")
 	flag.StringVar(&clusterLabelName, "cluster-label-name", "cluster", "The cluster label name")
 	flag.Parse()
-	exec := sdk.NewExec()
 
-	// prometheus.BuildPrometheusOverview(exec, project, datasource, clusterLabelName)
-	prometheus.BuildPrometheusRemoteWrite(exec, project, datasource, clusterLabelName)
+	writer := dashboards.NewExec()
+	builders := []dashboard.Builder{}
+
+	rw, err := prometheus.BuildPrometheusRemoteWrite(project, datasource, clusterLabelName)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	builders = append(builders, rw)
+
+	for _, builder := range builders {
+		writer.BuildDashboard(builder, nil)
+	}
 }
