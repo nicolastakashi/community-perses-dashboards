@@ -17,6 +17,7 @@ const (
 )
 
 func init() {
+	flag.String("output", JSONOutput, "output format of the exec")
 	flag.String("output-dir", "./built", "output directory of the exec")
 }
 

@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/nicolastakashi/community-perses-dashboards/dashboards/prometheus"
 	dashboards "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards"
+	"github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/prometheus"
 	"github.com/perses/perses/go-sdk/dashboard"
 )
 
@@ -25,7 +25,7 @@ func main() {
 	writer := dashboards.NewExec()
 	builders := []dashboard.Builder{}
 
-	rw, err := prometheus.BuildPrometheusRemoteWrite(project, datasource, clusterLabelName)
+	rw, err := prometheus.BuildPrometheusOverview(project, datasource, clusterLabelName)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
