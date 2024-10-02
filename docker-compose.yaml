@@ -6,13 +6,3 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - "127.0.0.1:3000:3000"
-    restart: unless-stopped
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin

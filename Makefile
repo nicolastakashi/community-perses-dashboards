@@ -1,3 +1,4 @@
-apply-dashboards:
-	@echo "Applying dashboards"
-	@go run main.go | percli apply -f -
+.PHONY: build-dashboards
+build-dashboards:
+	@echo "Building dashboards"
+	@go run main.go
