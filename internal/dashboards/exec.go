@@ -17,8 +17,8 @@ const (
 )
 
 func init() {
-	flag.String("output", JSONOutput, "output format of the exec")
-	flag.String("output-dir", "./built", "output directory of the exec")
+	flag.String("output", YAMLOutput, "output format of the exec")
+	flag.String("output-dir", "./dist", "output directory of the exec")
 }
 
 func executeDashboardBuilder(builder dashboard.Builder, outputFormat string, outputDir string, errWriter io.Writer) {

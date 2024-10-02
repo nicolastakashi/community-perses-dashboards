@@ -372,3 +372,470 @@ func PrometheusQueryStateDuration(datasourceName string, labelMathers ...promql.
 		),
 	)
 }
+
+// PrometheusRemoteStorageTimestampLag creates a panel option for visualizing the timestamp lag
+// between the highest timestamp in Prometheus remote storage and the highest sent
+// timestamp in the remote storage queue. This can help in identifying delays or
+// issues in data ingestion.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus datasource to be used for the query.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: An option that adds a panel to a panel group with the specified
+//     configuration for visualizing timestamp lag.
+func PrometheusRemoteStorageTimestampLag(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Timestamp Lag",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"(prometheus_remote_storage_highest_timestamp_in_seconds{instance=~'$instance'} -  ignoring(remote_name, url) group_right(instance) (prometheus_remote_storage_queue_highest_sent_timestamp_seconds{instance=~'$instance', url='$url'} != 0))",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageRateLag creates a panel option for monitoring the rate lag of Prometheus remote storage.
+// It generates a time series panel with a specific query to measure the lag between the highest timestamp in Prometheus
+// remote storage and the highest sent timestamp in the remote storage queue.
+//
+// Parameters:
+// - datasourceName: The name of the data source to be used in the query.
+// - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+// - panelgroup.Option: An option to add the configured panel to a panel group.
+func PrometheusRemoteStorageRateLag(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Rate[5m]",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"clamp_min(rate(prometheus_remote_storage_highest_timestamp_in_seconds{instance=~'$instance'}[5m])  - ignoring (remote_name, url) group_right(instance) rate(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{instance=~'$instance', url='$url'}[5m]), 0)",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageSampleRate creates a panel option for visualizing the rate of Prometheus remote storage samples
+// over a 5-minute interval. It displays the rate of incoming samples versus succeeded or dropped samples.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus datasource.
+//   - labelMathers: A variadic parameter for Prometheus label matchers.
+//
+// Returns:
+//   - panelgroup.Option: An option that adds the configured panel to a panel group.
+func PrometheusRemoteStorageSampleRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Rate, in vs. succeeded or dropped [5m]",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"rate(prometheus_remote_storage_samples_in_total{instance=~'$instance'}[5m]) - ignoring(remote_name, url) group_right(instance) (rate(prometheus_remote_storage_succeeded_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_total{instance=~'$instance', url='$url'}[5m])) - (rate(prometheus_remote_storage_dropped_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_dropped_total{instance=~'$instance', url='$url'}[5m]))",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageCurrentShards creates a panel option for displaying the current number of shards
+// in Prometheus remote storage. It configures a time series panel with a legend at the bottom in table mode,
+// and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageCurrentShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Current Shards",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_remote_storage_shards{instance=~'$instance', url='$url'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageDesiredShards creates a panel option for displaying the desired shards
+// of Prometheus remote storage. It configures a time series panel with a legend positioned at the
+// bottom in table mode and adds a PromQL query to fetch the desired shards metric.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus datasource to be used in the query.
+//   - labelMathers: A variadic parameter of PromQL label matchers to filter the query.
+//
+// Returns:
+//
+//	A panelgroup.Option configured with the desired shards panel and query.
+func PrometheusRemoteStorageDesiredShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Desired Shards",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_remote_storage_shards_desired{instance=~'$instance', url='$url'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageMaxShards creates a panel option for displaying the maximum number of shards
+// in Prometheus remote storage. It configures a time series panel with a legend at the bottom in table mode,
+// and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageMaxShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Max Shards",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_remote_storage_shards_max{instance=~'$instance', url='$url'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageMinShards creates a panel option for displaying the minimum number of shards
+// in Prometheus remote storage. It configures a time series panel with a legend at the bottom in table mode,
+// and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageMinShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Min Shards",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_remote_storage_shards_min{instance=~'$instance', url='$url'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageShardCapacity creates a panel option for displaying the shard capacity
+// in Prometheus remote storage. It configures a time series panel with a legend at the bottom in table mode,
+// and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageShardCapacity(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Shard Capacity",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_remote_storage_shard_capacity{instance=~'$instance', url='$url'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStoragePendingSamples creates a panel option for displaying the pending samples
+// in Prometheus remote storage. It configures a time series panel with a legend at the bottom in table mode,
+// and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStoragePendingSamples(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Pending Samples",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_remote_storage_pending_samples{instance=~'$instance', url='$url'} or prometheus_remote_storage_samples_pending{instance=~'$instance', url='$url'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusTSDBCurrentSegment creates a panel option for displaying the current segment
+// of the Prometheus TSDB WAL (Write-Ahead Log). It configures a time series panel with a legend
+// positioned at the bottom in table mode and adds a PromQL query to fetch the relevant metric.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusTSDBCurrentSegment(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("TSDB Current Segment",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_tsdb_wal_segment_current{instance=~'$instance'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteWriteCurrentSegment creates a panel option for displaying the current segment
+// of the Prometheus remote write WAL (Write-Ahead Log). It configures a time series panel with a legend
+// positioned at the bottom in table mode and adds a PromQL query to fetch the relevant metric.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteWriteCurrentSegment(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Remote Write Current Segment",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"prometheus_wal_watcher_current_segment{instance=~'$instance'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageDroppedSamplesRate creates a panel option for displaying the rate of dropped samples
+// in Prometheus remote storage over a 5-minute interval. It configures a time series panel with a legend
+// positioned at the bottom in table mode and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageDroppedSamplesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Dropped Samples Rate",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"rate(prometheus_remote_storage_dropped_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_dropped_total{instance=~'$instance', url='$url'}[5m])",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageFailedSamplesRate creates a panel option for displaying the rate of failed samples
+// in Prometheus remote storage over a 5-minute interval. It configures a time series panel with a legend
+// positioned at the bottom in table mode and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageFailedSamplesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Failed Samples",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"rate(prometheus_remote_storage_failed_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_failed_total{instance=~'$instance', url='$url'}[5m])",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageRetriedSamplesRate creates a panel option for displaying the rate of retried samples
+// in Prometheus remote storage over a 5-minute interval. It configures a time series panel with a legend
+// positioned at the bottom in table mode and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageRetriedSamplesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Retried Samples",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"rate(prometheus_remote_storage_retried_samples_total{instance=~'$instance', url=~'$url'}[5m]) or rate(prometheus_remote_storage_samples_retried_total{instance=~'$instance', url=~'$url'}[5m])",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}
+
+// PrometheusRemoteStorageEnqueueRetriesRate creates a panel option for displaying the rate of enqueue retries
+// in Prometheus remote storage over a 5-minute interval. It configures a time series panel with a legend
+// positioned at the bottom in table mode and adds a PromQL query to fetch the relevant metrics.
+//
+// Parameters:
+//   - datasourceName: The name of the data source to be used for the query.
+//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//
+// Returns:
+//   - panelgroup.Option: The configured panel option.
+func PrometheusRemoteStorageEnqueueRetriesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Enqueue Retries",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"rate(prometheus_remote_storage_enqueue_retries_total{instance=~'$instance', url=~'$url'}[5m])",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
+			),
+		),
+	)
+}

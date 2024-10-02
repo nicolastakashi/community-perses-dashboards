@@ -51,16 +51,8 @@ func withPrometheusQueryGroup(datasource string, labelMatcher promql.LabelMatche
 	)
 }
 
-func GetClusterLabelMatcher(clusterLabelName string) promql.LabelMatcher {
-	return promql.LabelMatcher{
-		Name:  clusterLabelName,
-		Value: "$cluster",
-		Type:  "=",
-	}
-}
-
 func BuildPrometheusOverview(project string, datasource string, clusterLabelName string) (dashboard.Builder, error) {
-	clusterLabelMatcher := GetClusterLabelMatcher(clusterLabelName)
+	clusterLabelMatcher := dashboards.GetClusterLabelMatcher(clusterLabelName)
 	return dashboard.New("prometheus-overview",
 		dashboard.ProjectName(project),
 		dashboard.Name("Prometheus / Overview"),

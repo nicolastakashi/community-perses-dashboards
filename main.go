@@ -25,13 +25,20 @@ func main() {
 	writer := dashboards.NewExec()
 	builders := []dashboard.Builder{}
 
-	rw, err := prometheus.BuildPrometheusOverview(project, datasource, clusterLabelName)
+	po, err := prometheus.BuildPrometheusOverview(project, datasource, clusterLabelName)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
 
-	builders = append(builders, rw)
+	builders = append(builders, po)
+
+	prw, err := prometheus.BuildPrometheusRemoteWrite(project, datasource, clusterLabelName)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	builders = append(builders, prw)
 
 	for _, builder := range builders {
 		writer.BuildDashboard(builder, nil)

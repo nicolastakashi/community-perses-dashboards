@@ -1,6 +1,7 @@
 package dashboards
 
 import (
+	"github.com/nicolastakashi/community-perses-dashboards/internal/promql"
 	"github.com/perses/perses/go-sdk/dashboard"
 	"github.com/perses/perses/go-sdk/prometheus/query"
 	labelValuesVar "github.com/perses/perses/go-sdk/prometheus/variable/label-values"
@@ -40,4 +41,12 @@ func AddClusterVariable(datasource, clusterLabelName, matcher string) dashboard.
 			listVar.DisplayName(clusterLabelName),
 		),
 	)
+}
+
+func GetClusterLabelMatcher(clusterLabelName string) promql.LabelMatcher {
+	return promql.LabelMatcher{
+		Name:  clusterLabelName,
+		Value: "$cluster",
+		Type:  "=",
+	}
 }
