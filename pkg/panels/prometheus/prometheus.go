@@ -1,4 +1,4 @@
-package panels
+package prometheus
 
 import (
 	"github.com/nicolastakashi/community-perses-dashboards/internal/dashboards"
