@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	dashboards "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards"
+	nodeexporter "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/node_exporter"
 	"github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/prometheus"
 	"github.com/perses/perses/go-sdk/dashboard"
 )
@@ -39,6 +40,14 @@ func main() {
 		return
 	}
 	builders = append(builders, prw)
+
+	nodeExporterNodes, err := nodeexporter.BuildNodeExporterNodes(project, datasource, clusterLabelName)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	builders = append(builders, nodeExporterNodes)
 
 	for _, builder := range builders {
 		writer.BuildDashboard(builder, nil)
