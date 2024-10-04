@@ -69,11 +69,15 @@ func BuildPrometheusOverview(project string, datasource string, clusterLabelName
 		dashboard.AddVariable("instance",
 			listVar.List(
 				labelValuesVar.PrometheusLabelValues("instance",
-					labelValuesVar.Matchers("prometheus_build_info{job='$job'}"),
+					labelValuesVar.Matchers(
+						promql.SetLabelMatchers(
+							"prometheus_remote_storage_shards",
+							[]promql.LabelMatcher{clusterLabelMatcher},
+						),
+					),
 					dashboards.AddVariableDatasource(datasource),
 				),
 				listVar.DisplayName("instance"),
-				listVar.AllowAllValue(true),
 			),
 		),
 		withPrometheusOverviewStatsGroup(datasource, clusterLabelMatcher),
