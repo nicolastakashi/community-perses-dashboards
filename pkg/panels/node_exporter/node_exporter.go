@@ -48,6 +48,397 @@ func NodeCPUUsagePercentage(datasourceName string, labelMathers ...promql.LabelM
 	)
 }
 
+// ClusterNodeCPUUsagePercentage creates a panel option for displaying the CPU usage percentage of cluster nodes.
+// It takes a datasource name and an optional list of Prometheus label matchers as arguments.
+// The panel displays a time series chart with the CPU usage percentage, formatted as a percentage unit.
+// The legend is positioned at the bottom and displayed in table mode, showing the last calculated value.
+// The PromQL query used calculates the CPU usage percentage by dividing the rate of CPU utilization by the total number of CPUs.
+//
+// The following Prometheus metrics are used:
+// - instance:node_cpu_utilisation:rate5m: The rate of CPU utilization over a 5-minute interval.
+// - instance:node_num_cpu:sum: The total number of CPUs.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeCPUUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("CPU Usage",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.PercentDecimalUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"((instance:node_cpu_utilisation:rate5m{job='node'} * instance:node_num_cpu:sum{job='node'}) != 0 ) / scalar(sum(instance:node_num_cpu:sum{job='node'}))",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeCPUSaturationPercentage creates a panel option for displaying the CPU saturation percentage
+// (Load1 per CPU) for cluster nodes. It takes a datasource name and an optional list of Prometheus label
+// matchers as arguments. The panel includes a time series chart with a percentage format on the Y-axis
+// and a legend positioned at the bottom in table mode, showing the last calculated value. The PromQL
+// query used divides the instance load by the count of instances, filtering out zero values.
+//
+// The following Prometheus metrics are used:
+// - instance:node_load1_per_cpu:ratio: The ratio of the 1-minute load average per CPU.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeCPUSaturationPercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("CPU Saturation (Load1 per CPU)",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.PercentDecimalUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"(instance:node_load1_per_cpu:ratio{job='node'} / scalar(count(instance:node_load1_per_cpu:ratio{job='node'})))  != 0",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeMemoryUsagePercentage creates a panel option for displaying the memory usage percentage of cluster nodes.
+// It takes a datasource name and an optional list of Prometheus label matchers as arguments.
+// The panel displays a time series chart with the memory usage percentage, formatted as a percentage unit.
+// The legend is positioned at the bottom and displayed in table mode, showing the last calculated value.
+// The PromQL query used calculates the memory usage percentage by dividing the used memory by the total memory.
+//
+// The following Prometheus metrics are used:
+// - instance:node_memory_utilisation:ratio: The ratio of memory utilization.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeMemoryUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Memory Utilisation",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.PercentDecimalUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"(instance:node_memory_utilisation:ratio{job='node'} / scalar(count(instance:node_memory_utilisation:ratio{job='node'}))) != 0",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeMemorySaturationPercentage creates a panel option for displaying the memory saturation percentage
+// (Major Page Faults) of cluster nodes. It takes a datasource name and an optional list of Prometheus label
+// matchers as arguments. The panel includes a time series chart with a reads per second format on the Y-axis
+// and a legend positioned at the bottom in table mode, showing the last calculated value. The PromQL
+// query used calculates the rate of major page faults over a 5-minute interval.
+//
+// The following Prometheus metrics are used:
+// - instance:node_vmstat_pgmajfault:rate5m: The rate of major page faults over a 5-minute interval.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeMemorySaturationPercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Memory Saturation (Major Page Faults)",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.ReadsPerSecondsUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"instance:node_vmstat_pgmajfault:rate5m{job='node'}",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeDiskUsagePercentage creates a panel option for displaying the disk usage percentage
+// of cluster nodes. It takes a datasource name and an optional list of Prometheus label
+// matchers as arguments. The panel includes a time series chart with a percentage format on the Y-axis
+// and a legend positioned at the bottom in table mode, showing the last calculated value. The PromQL
+// query used calculates the disk usage percentage by dividing the rate of disk I/O time by the total number of disks.
+//
+// The following Prometheus metrics are used:
+// - instance_device:node_disk_io_time_seconds:rate5m: The rate of disk I/O time over a 5-minute interval.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeDiskUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Disk IO Utilisation",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.PercentDecimalUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"(instance_device:node_disk_io_time_seconds:rate5m{job='node'} / scalar(count(instance_device:node_disk_io_time_seconds:rate5m{job='node'}))) != 0",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeDiskSaturationPercentage creates a panel option for displaying the disk I/O saturation
+// of cluster nodes. It takes a datasource name and an optional list of Prometheus label
+// matchers as arguments. The panel includes a time series chart with a percentage format on the Y-axis
+// and a legend positioned at the bottom in table mode, showing the last calculated value. The PromQL
+// query used calculates the disk I/O saturation by dividing the weighted disk I/O time by the total number of disks.
+//
+// The following Prometheus metrics are used:
+// - instance_device:node_disk_io_time_weighted_seconds:rate5m: The rate of weighted disk I/O time over a 5-minute interval.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeDiskSaturationPercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Disk IO Saturation",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.PercentDecimalUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"(instance_device:node_disk_io_time_weighted_seconds:rate5m{job='node'} / scalar(count(instance_device:node_disk_io_time_weighted_seconds:rate5m{job='node'}))) != 0",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeDiskSpacePercentage creates a panel option for displaying the disk space utilization
+// of cluster nodes. It takes a datasource name and an optional list of Prometheus label
+// matchers as arguments. The panel includes a time series chart with a percentage format on the Y-axis
+// and a legend positioned at the bottom in table mode, showing the last calculated value. The PromQL
+// query used calculates the disk space utilization by dividing the used disk space by the total disk space.
+//
+// The following Prometheus metrics are used:
+// - node_filesystem_size_bytes: The total size of the filesystem.
+// - node_filesystem_avail_bytes: The available size of the filesystem.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeDiskSpacePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Disk Space Utilisation",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.PercentDecimalUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"sum without (device) (max without (fstype, mountpoint) ((node_filesystem_size_bytes{job='node', fstype!='', mountpoint!=''} - node_filesystem_avail_bytes{job='node', fstype!='', mountpoint!=''}) != 0)) / scalar(sum(max without (fstype, mountpoint) (node_filesystem_size_bytes{job='node', fstype!='', mountpoint!=''})))",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeNetworkSaturationBytes creates a panel option for displaying the network saturation
+// (Drops Receive/Transmit) of cluster nodes. It takes a datasource name and an optional list of Prometheus label
+// matchers as arguments. The panel includes a time series chart with a bytes per second format on the Y-axis
+// and a legend positioned at the bottom in table mode, showing the last calculated value. The PromQL
+// query used calculates the rate of network drops over a 5-minute interval.
+//
+// The following Prometheus metrics are used:
+// - instance:node_network_receive_drop_excluding_lo:rate5m: The rate of network receive drops over a 5-minute interval.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeNetworkSaturationBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Network Saturation (Drops Receive/Transmit)",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.BytesPerSecondsUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"instance:node_network_receive_drop_excluding_lo:rate5m{job='node'} != 0",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }}"),
+			),
+		),
+	)
+}
+
+// ClusterNodeNetworkUsageBytes creates a panel option for displaying the network utilization
+// (Bytes Receive/Transmit) of cluster nodes. It takes a datasource name and an optional list of Prometheus label
+// matchers as arguments. The panel includes a time series chart with a bytes per second format on the Y-axis
+// and a legend positioned at the bottom in table mode, showing the last calculated value. The PromQL
+// queries used calculate the rate of network bytes received and transmitted over a 5-minute interval.
+//
+// The following Prometheus metrics are used:
+// - instance:node_network_receive_bytes_excluding_lo:rate5m: The rate of network bytes received over a 5-minute interval.
+// - instance:node_network_transmit_bytes_excluding_lo:rate5m: The rate of network bytes transmitted over a 5-minute interval.
+//
+// Parameters:
+//   - datasourceName: The name of the Prometheus data source.
+//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//
+// Returns:
+//   - panelgroup.Option: A panel option that can be added to a panel group.
+func ClusterNodeNetworkUsageBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+	return panelgroup.AddPanel("Network Utilisation (Bytes Receive/Transmit)",
+		timeSeriesPanel.Chart(
+			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
+				Format: &commonSdk.Format{
+					Unit: string(commonSdk.BytesPerSecondsUnit),
+				},
+			}),
+			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
+				Position: timeSeriesPanel.BottomPosition,
+				Mode:     timeSeriesPanel.TableMode,
+				Values:   []commonSdk.Calculation{commonSdk.LastCalculation},
+			}),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"instance:node_network_receive_bytes_excluding_lo:rate5m{job='node'} != 0",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }} Receive"),
+			),
+		),
+		panel.AddQuery(
+			query.PromQL(
+				promql.SetLabelMatchers(
+					"instance:node_network_transmit_bytes_excluding_lo:rate5m{job='node'} != 0",
+					labelMathers,
+				),
+				dashboards.AddQueryDataSource(datasourceName),
+				query.SeriesNameFormat("{{ instance }} Transmit"),
+			),
+		),
+	)
+}
+
 // NodeAverage creates a panel group option for displaying CPU usage metrics.
 // It adds a time series panel with multiple Prometheus queries to visualize
 // the 1-minute, 5-minute, and 15-minute load averages, as well as the count

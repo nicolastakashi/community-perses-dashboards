@@ -49,6 +49,14 @@ func main() {
 
 	builders = append(builders, nodeExporterNodes)
 
+	nodeClusterUseMethod, err := nodeexporter.BuildNodeExporterClusterUseMethod(project, datasource, clusterLabelName)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	builders = append(builders, nodeClusterUseMethod)
+
 	for _, builder := range builders {
 		writer.BuildDashboard(builder, nil)
 	}
