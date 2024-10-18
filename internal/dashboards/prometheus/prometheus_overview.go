@@ -71,8 +71,8 @@ func BuildPrometheusOverview(project string, datasource string, clusterLabelName
 				labelValuesVar.PrometheusLabelValues("instance",
 					labelValuesVar.Matchers(
 						promql.SetLabelMatchers(
-							"prometheus_remote_storage_shards",
-							[]promql.LabelMatcher{clusterLabelMatcher},
+							"prometheus_build_info",
+							[]promql.LabelMatcher{clusterLabelMatcher, {Name: "job", Type: "=", Value: "$job"}},
 						),
 					),
 					dashboards.AddVariableDatasource(datasource),
