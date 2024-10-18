@@ -20,7 +20,7 @@ func main() {
 
 	flag.StringVar(&project, "project", "default", "The project name")
 	flag.StringVar(&datasource, "datasource", "", "The datasource name")
-	flag.StringVar(&clusterLabelName, "cluster-label-name", "cluster", "The cluster label name")
+	flag.StringVar(&clusterLabelName, "cluster-label-name", "", "The cluster label name")
 	flag.Parse()
 
 	writer := dashboards.NewExec()
