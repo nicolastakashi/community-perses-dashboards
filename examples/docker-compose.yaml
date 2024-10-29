@@ -1,0 +1,12 @@
+services:
+  perses:
+    image: persesdev/perses:v0.49-distroless-debug
+    container_name: perses
+    command: "--config=/etc/perses/config/config.yaml"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./perses/config.yaml:/etc/perses/config/config.yaml
+      - ./perses/datasource.yaml:/etc/perses/resources/datasource.yaml
+      - ./perses/project.yaml:/etc/perses/resources/project.yaml
