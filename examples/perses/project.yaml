@@ -1,0 +1,6 @@
+kind: Project
+metadata:
+  name: mixin
+spec:
+  display:
+    name: "mixin"
