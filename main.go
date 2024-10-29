@@ -2,12 +2,10 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	dashboards "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards"
 	nodeexporter "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/node_exporter"
 	"github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/prometheus"
-	"github.com/perses/perses/go-sdk/dashboard"
 )
 
 var (
@@ -23,41 +21,12 @@ func main() {
 	flag.StringVar(&clusterLabelName, "cluster-label-name", "", "The cluster label name")
 	flag.Parse()
 
-	writer := dashboards.NewExec()
-	builders := []dashboard.Builder{}
+	dashboardWriter := dashboards.NewDashboardWriter()
 
-	po, err := prometheus.BuildPrometheusOverview(project, datasource, clusterLabelName)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
+	dashboardWriter.Add(prometheus.BuildPrometheusOverview(project, datasource, clusterLabelName))
+	dashboardWriter.Add(prometheus.BuildPrometheusRemoteWrite(project, datasource, clusterLabelName))
+	dashboardWriter.Add(nodeexporter.BuildNodeExporterNodes(project, datasource, clusterLabelName))
+	dashboardWriter.Add(nodeexporter.BuildNodeExporterClusterUseMethod(project, datasource, clusterLabelName))
 
-	builders = append(builders, po)
-
-	prw, err := prometheus.BuildPrometheusRemoteWrite(project, datasource, clusterLabelName)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
-	builders = append(builders, prw)
-
-	nodeExporterNodes, err := nodeexporter.BuildNodeExporterNodes(project, datasource, clusterLabelName)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
-
-	builders = append(builders, nodeExporterNodes)
-
-	nodeClusterUseMethod, err := nodeexporter.BuildNodeExporterClusterUseMethod(project, datasource, clusterLabelName)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
-
-	builders = append(builders, nodeClusterUseMethod)
-
-	for _, builder := range builders {
-		writer.BuildDashboard(builder, nil)
-	}
+	dashboardWriter.Write()
 }
