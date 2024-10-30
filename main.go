@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	dashboards "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards"
+	"github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/alertmanager"
 	nodeexporter "github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/node_exporter"
 	"github.com/nicolastakashi/community-perses-dashboards/internal/dashboards/prometheus"
 )
@@ -27,6 +28,7 @@ func main() {
 	dashboardWriter.Add(prometheus.BuildPrometheusRemoteWrite(project, datasource, clusterLabelName))
 	dashboardWriter.Add(nodeexporter.BuildNodeExporterNodes(project, datasource, clusterLabelName))
 	dashboardWriter.Add(nodeexporter.BuildNodeExporterClusterUseMethod(project, datasource, clusterLabelName))
+	dashboardWriter.Add(alertmanager.BuildAlertManagerOverview(project, datasource, clusterLabelName))
 
 	dashboardWriter.Write()
 }
