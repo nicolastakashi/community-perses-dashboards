@@ -5,8 +5,13 @@ This repository hosts the code for Perses Community Dashboards, designed to serv
 # Available Dashboards
 
 - Prometheus
-- Node Exporter
-- Alert Manager
+    - Prometheus Overview
+    - Prometheus Remote Write
+- NodeExporter
+    - Nodes
+    - Cluster USE Method
+- AlertManager
+    - AlertManager Overview
 
 # Library Panels
 
