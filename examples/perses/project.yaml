@@ -1,6 +1,6 @@
 kind: Project
 metadata:
-  name: mixin
+  name: default
 spec:
   display:
-    name: "mixin"
+    name: "default"
