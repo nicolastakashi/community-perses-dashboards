@@ -4,7 +4,7 @@ build-dashboards:
 	@go run main.go
 
 .PHONY: demo
-demo:
+start-demo:
 	@echo "Setting up demo environment"
 
 	@cd ./examples && docker-compose up -d
