@@ -1,8 +1,3 @@
-.PHONY: build-dashboards
-build-dashboards:
-	@echo "Building dashboards"
-	@go run main.go
-
 .PHONY: demo
 start-demo:
 	@echo "Setting up demo environment"
@@ -14,3 +9,8 @@ clean-demo:
 	@echo "Cleaning up demo environment"
 
 	@cd ./examples && docker-compose down -v
+
+.PHONY: build-dashboards
+build-dashboards:
+	@echo "Building dashboards"
+	@go run main.go
