@@ -7,3 +7,6 @@ validators:
     type: "ignore"
   - regex: 'github\.com'
     type: "ignore"
+  # ignoring localhost address
+  - regex: "localhost"
+    type: "ignore"
