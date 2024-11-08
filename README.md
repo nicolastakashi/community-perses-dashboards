@@ -5,15 +5,15 @@ Welcome to the **Perses Community Dashboards** repository! This project is desig
 ## Overview of Available Dashboards
 
 ### Prometheus Dashboards
-- **Prometheus Overview**
-- **Prometheus Remote Write**
+- Prometheus Overview
+- Prometheus Remote Write
 
 ### Node Exporter Dashboards
-- **Nodes**
-- **Cluster USE Method**
+- Nodes
+- Cluster USE Method
 
 ### AlertManager Dashboards
-- **AlertManager Overview**
+- AlertManager Overview
 
 ## Library Panels
 
