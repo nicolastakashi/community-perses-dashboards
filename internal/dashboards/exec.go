@@ -45,10 +45,10 @@ func executeDashboardBuilder(builder dashboard.Builder, outputFormat string, out
 	}
 
 	if err != nil && os.IsNotExist(err) {
-		os.MkdirAll(outputDir, os.ModePerm)
+		_ = os.MkdirAll(outputDir, os.ModePerm)
 	}
 
-	os.WriteFile(fmt.Sprintf("%s/%s.%s", outputDir, builder.Dashboard.Metadata.Name, outputFormat), output, os.ModePerm)
+	_ = os.WriteFile(fmt.Sprintf("%s/%s.%s", outputDir, builder.Dashboard.Metadata.Name, outputFormat), output, os.ModePerm)
 }
 
 func NewExec() Exec {

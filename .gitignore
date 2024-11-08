@@ -151,3 +151,6 @@ $RECYCLE.BIN/
 
 # dashboard build directory
 dist/
+
+# tmp folder
+tmp/
