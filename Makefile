@@ -64,6 +64,11 @@ check-docs: $(MDOX_BINARY)
 	@echo ">> checking formatting and local/remote links"
 	$(MDOX_BINARY) fmt --soft-wraps --check -l --links.validate.config-file=$(MDOX_VALIDATE_CONFIG) $(MD_FILES_TO_FORMAT)
 
+.PHONY: tidy
+tidy:
+	go mod tidy -v
+	cd scripts && go mod tidy -v -modfile=go.mod -compat=1.18
+
 all: fmt vet deps check-golang check-docs
 
 $(TOOLS_BIN_DIR):
