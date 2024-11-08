@@ -17,11 +17,11 @@ import (
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func NodeCPUUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeCPUUsagePercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("CPU Usage",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -39,7 +39,7 @@ func NodeCPUUsagePercentage(datasourceName string, labelMathers ...promql.LabelM
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"((1 - sum without (mode) (rate(node_cpu_seconds_total{job='node', mode=~'idle|iowait|steal', instance='$instance'}[5m]))) / ignoring(cpu) group_left count without (cpu, mode) (node_cpu_seconds_total{job='node', mode='idle', instance='$instance'}))",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{cpu}}"),
@@ -60,11 +60,11 @@ func NodeCPUUsagePercentage(datasourceName string, labelMathers ...promql.LabelM
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeCPUUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeCPUUsagePercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("CPU Usage",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -82,7 +82,7 @@ func ClusterNodeCPUUsagePercentage(datasourceName string, labelMathers ...promql
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"((instance:node_cpu_utilisation:rate5m{job='node'} * instance:node_num_cpu:sum{job='node'}) != 0 ) / scalar(sum(instance:node_num_cpu:sum{job='node'}))",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -102,11 +102,11 @@ func ClusterNodeCPUUsagePercentage(datasourceName string, labelMathers ...promql
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeCPUSaturationPercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeCPUSaturationPercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("CPU Saturation (Load1 per CPU)",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -124,7 +124,7 @@ func ClusterNodeCPUSaturationPercentage(datasourceName string, labelMathers ...p
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"(instance:node_load1_per_cpu:ratio{job='node'} / scalar(count(instance:node_load1_per_cpu:ratio{job='node'})))  != 0",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -144,11 +144,11 @@ func ClusterNodeCPUSaturationPercentage(datasourceName string, labelMathers ...p
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeMemoryUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeMemoryUsagePercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Memory Utilisation",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -166,7 +166,7 @@ func ClusterNodeMemoryUsagePercentage(datasourceName string, labelMathers ...pro
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"(instance:node_memory_utilisation:ratio{job='node'} / scalar(count(instance:node_memory_utilisation:ratio{job='node'}))) != 0",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -186,11 +186,11 @@ func ClusterNodeMemoryUsagePercentage(datasourceName string, labelMathers ...pro
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeMemorySaturationPercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeMemorySaturationPercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Memory Saturation (Major Page Faults)",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -208,7 +208,7 @@ func ClusterNodeMemorySaturationPercentage(datasourceName string, labelMathers .
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"instance:node_vmstat_pgmajfault:rate5m{job='node'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -228,11 +228,11 @@ func ClusterNodeMemorySaturationPercentage(datasourceName string, labelMathers .
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeDiskUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeDiskUsagePercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Disk IO Utilisation",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -250,7 +250,7 @@ func ClusterNodeDiskUsagePercentage(datasourceName string, labelMathers ...promq
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"(instance_device:node_disk_io_time_seconds:rate5m{job='node'} / scalar(count(instance_device:node_disk_io_time_seconds:rate5m{job='node'}))) != 0",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -270,11 +270,11 @@ func ClusterNodeDiskUsagePercentage(datasourceName string, labelMathers ...promq
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeDiskSaturationPercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeDiskSaturationPercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Disk IO Saturation",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -292,7 +292,7 @@ func ClusterNodeDiskSaturationPercentage(datasourceName string, labelMathers ...
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"(instance_device:node_disk_io_time_weighted_seconds:rate5m{job='node'} / scalar(count(instance_device:node_disk_io_time_weighted_seconds:rate5m{job='node'}))) != 0",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -313,11 +313,11 @@ func ClusterNodeDiskSaturationPercentage(datasourceName string, labelMathers ...
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeDiskSpacePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeDiskSpacePercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Disk Space Utilisation",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -335,7 +335,7 @@ func ClusterNodeDiskSpacePercentage(datasourceName string, labelMathers ...promq
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"sum without (device) (max without (fstype, mountpoint) ((node_filesystem_size_bytes{job='node', fstype!='', mountpoint!=''} - node_filesystem_avail_bytes{job='node', fstype!='', mountpoint!=''}) != 0)) / scalar(sum(max without (fstype, mountpoint) (node_filesystem_size_bytes{job='node', fstype!='', mountpoint!=''})))",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -355,11 +355,11 @@ func ClusterNodeDiskSpacePercentage(datasourceName string, labelMathers ...promq
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeNetworkSaturationBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeNetworkSaturationBytes(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Network Saturation (Drops Receive/Transmit)",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -377,7 +377,7 @@ func ClusterNodeNetworkSaturationBytes(datasourceName string, labelMathers ...pr
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"instance:node_network_receive_drop_excluding_lo:rate5m{job='node'} != 0",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }}"),
@@ -398,11 +398,11 @@ func ClusterNodeNetworkSaturationBytes(datasourceName string, labelMathers ...pr
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus data source.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func ClusterNodeNetworkUsageBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func ClusterNodeNetworkUsageBytes(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Network Utilisation (Bytes Receive/Transmit)",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -420,7 +420,7 @@ func ClusterNodeNetworkUsageBytes(datasourceName string, labelMathers ...promql.
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"instance:node_network_receive_bytes_excluding_lo:rate5m{job='node'} != 0",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }} Receive"),
@@ -430,7 +430,7 @@ func ClusterNodeNetworkUsageBytes(datasourceName string, labelMathers ...promql.
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"instance:node_network_transmit_bytes_excluding_lo:rate5m{job='node'} != 0",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{ instance }} Transmit"),
@@ -446,11 +446,11 @@ func ClusterNodeNetworkUsageBytes(datasourceName string, labelMathers ...promql.
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the queries.
-//   - labelMathers: Optional Prometheus label matchers to filter the metrics.
+//   - labelMatchers: Optional Prometheus label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel group option.
-func NodeAverage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeAverage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("CPU Usage",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -463,7 +463,7 @@ func NodeAverage(datasourceName string, labelMathers ...promql.LabelMatcher) pan
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"node_load1{job='node', instance='$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("1m load average"),
@@ -473,7 +473,7 @@ func NodeAverage(datasourceName string, labelMathers ...promql.LabelMatcher) pan
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"node_load5{job='node', instance='$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("5m load average"),
@@ -483,7 +483,7 @@ func NodeAverage(datasourceName string, labelMathers ...promql.LabelMatcher) pan
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"node_load15{job='node', instance='$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("15m load average"),
@@ -493,7 +493,7 @@ func NodeAverage(datasourceName string, labelMathers ...promql.LabelMatcher) pan
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"count(node_cpu_seconds_total{job='node', instance='$instance', mode='idle'})",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("logical cores"),
@@ -513,11 +513,11 @@ func NodeAverage(datasourceName string, labelMathers ...promql.LabelMatcher) pan
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the queries.
-// - labelMathers: Optional Prometheus label matchers to filter the queries.
+// - labelMatchers: Optional Prometheus label matchers to filter the queries.
 //
 // Returns:
 // - panelgroup.Option: The configured panel group option.
-func NodeMemoryUsageBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeMemoryUsageBytes(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Memory Usage",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -536,7 +536,7 @@ func NodeMemoryUsageBytes(datasourceName string, labelMathers ...promql.LabelMat
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"(node_memory_MemTotal_bytes{job='node',instance='$instance'}-node_memory_MemFree_bytes{job='node',instance='$instance'}-node_memory_Buffers_bytes{job='node',instance='$instance'}-node_memory_Cached_bytes{job='node',instance='$instance'})",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("memory used"),
@@ -546,7 +546,7 @@ func NodeMemoryUsageBytes(datasourceName string, labelMathers ...promql.LabelMat
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"node_memory_Buffers_bytes{job='node', instance='$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("memory buffers"),
@@ -556,7 +556,7 @@ func NodeMemoryUsageBytes(datasourceName string, labelMathers ...promql.LabelMat
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"node_memory_Cached_bytes{job='node', instance='$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("memory cached"),
@@ -566,7 +566,7 @@ func NodeMemoryUsageBytes(datasourceName string, labelMathers ...promql.LabelMat
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"node_memory_MemFree_bytes{job='node', instance='$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("memory free"),
@@ -585,11 +585,11 @@ func NodeMemoryUsageBytes(datasourceName string, labelMathers ...promql.LabelMat
 //
 // Parameters:
 // - datasourceName: The name of the Prometheus datasource.
-// - labelMathers: Optional Prometheus label matchers to filter the metrics.
+// - labelMatchers: Optional Prometheus label matchers to filter the metrics.
 //
 // Returns:
 // - panelgroup.Option: The panel option for the memory usage gauge chart.
-func NodeMemoryUsagePercentage(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeMemoryUsagePercentage(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Memory Usage",
 		gauge.Chart(
 			gauge.Calculation(commonSdk.LastCalculation),
@@ -615,7 +615,7 @@ func NodeMemoryUsagePercentage(datasourceName string, labelMathers ...promql.Lab
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"100 - (avg(node_memory_MemAvailable_bytes{job='node', instance='$instance'}) / avg(node_memory_MemTotal_bytes{job='node', instance='$instance'}) * 100)",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("memory used"),
@@ -631,11 +631,11 @@ func NodeMemoryUsagePercentage(datasourceName string, labelMathers ...promql.Lab
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the Prometheus queries.
-// - labelMathers: Optional Prometheus label matchers to filter the metrics.
+// - labelMatchers: Optional Prometheus label matchers to filter the metrics.
 //
 // Returns:
 // - panelgroup.Option: A configured panel group option for the Disk I/O metrics.
-func NodeDiskIOBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeDiskIOBytes(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Disk I/O Bytes",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -653,7 +653,7 @@ func NodeDiskIOBytes(datasourceName string, labelMathers ...promql.LabelMatcher)
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(node_disk_read_bytes_total{job='node', instance='$instance',device!=''}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{device}} read"),
@@ -663,7 +663,7 @@ func NodeDiskIOBytes(datasourceName string, labelMathers ...promql.LabelMatcher)
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(node_disk_io_time_seconds_total{job='node', instance='$instance',device!=''}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{device}} written"),
@@ -681,11 +681,11 @@ func NodeDiskIOBytes(datasourceName string, labelMathers ...promql.LabelMatcher)
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the query.
-// - labelMathers: Optional Prometheus label matchers to filter the query results.
+// - labelMatchers: Optional Prometheus label matchers to filter the query results.
 //
 // Returns:
 // - A panelgroup.Option that adds the configured Disk I/O panel to a panel group.
-func NodeDiskIOSeconds(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeDiskIOSeconds(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Disk I/O Seconds",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -703,7 +703,7 @@ func NodeDiskIOSeconds(datasourceName string, labelMathers ...promql.LabelMatche
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(node_disk_io_time_seconds_total{job='node', instance='$instance',device!=''}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{device}} io time"),
@@ -719,11 +719,11 @@ func NodeDiskIOSeconds(datasourceName string, labelMathers ...promql.LabelMatche
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: Optional Prometheus label matchers to filter the query.
+//   - labelMatchers: Optional Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func NodeNetworkReceivedBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeNetworkReceivedBytes(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Network Received",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -741,7 +741,7 @@ func NodeNetworkReceivedBytes(datasourceName string, labelMathers ...promql.Labe
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(node_network_receive_bytes_total{job='node', instance='$instance',device!='lo'}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{device}}"),
@@ -756,11 +756,11 @@ func NodeNetworkReceivedBytes(datasourceName string, labelMathers ...promql.Labe
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: Optional Prometheus label matchers to filter the query.
+//   - labelMatchers: Optional Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: A panel option that can be added to a panel group.
-func NodeNetworkTransmitedBytes(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func NodeNetworkTransmitedBytes(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Network Transmitted",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -778,7 +778,7 @@ func NodeNetworkTransmitedBytes(datasourceName string, labelMathers ...promql.La
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(node_network_transmit_bytes_total{job='node', instance='$instance',device!='lo'}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{device}}"),

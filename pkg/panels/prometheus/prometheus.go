@@ -18,11 +18,11 @@ import (
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the Prometheus query.
-// - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+// - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 // - panelgroup.Option: An option to add the configured panel to a panel group.
-func PrometheusStatsTable(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusStatsTable(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Prometheus Stats",
 		tablePanel.Table(
 			tablePanel.WithColumnSettings([]tablePanel.ColumnSettings{
@@ -50,7 +50,7 @@ func PrometheusStatsTable(datasourceName string, labelMathers ...promql.LabelMat
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("count by (job, instance, version) (prometheus_build_info{job=~'$job', instance=~'$instance'})", labelMathers),
+				promql.SetLabelMatchers("count by (job, instance, version) (prometheus_build_info{job=~'$job', instance=~'$instance'})", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 			),
 		),
@@ -62,13 +62,13 @@ func PrometheusStatsTable(datasourceName string, labelMathers ...promql.LabelMat
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the query.
-// - labelMathers: A variadic parameter for PromQL label matchers.
+// - labelMatchers: A variadic parameter for PromQL label matchers.
 //
 // The function uses the following Prometheus metric:
 // - prometheus_target_sync_length_seconds_sum: This metric represents the total time taken for target synchronization in seconds.
 //
 // The panel displays the sum rate of the target synchronization length over a 5-minute interval, grouped by job, scrape_job, and instance.
-func PrometheusTargetSync(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusTargetSync(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Target Sync",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -83,7 +83,7 @@ func PrometheusTargetSync(datasourceName string, labelMathers ...promql.LabelMat
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("sum(rate(prometheus_target_sync_length_seconds_sum{job=~'$job',instance=~'$instance'}[5m])) by (job, scrape_job, instance)", labelMathers),
+				promql.SetLabelMatchers("sum(rate(prometheus_target_sync_length_seconds_sum{job=~'$job',instance=~'$instance'}[5m])) by (job, scrape_job, instance)", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{job}}:{{instance}}:{{scrape_job}}"),
 			),
@@ -98,14 +98,14 @@ func PrometheusTargetSync(datasourceName string, labelMathers ...promql.LabelMat
 //
 // Parameters:
 // - datasourceName: The name of the Prometheus datasource.
-// - labelMathers: Optional variadic parameter for PromQL label matchers.
+// - labelMatchers: Optional variadic parameter for PromQL label matchers.
 //
 // Metrics Used:
 // - prometheus_sd_discovered_targets: This metric provides information about the targets discovered by Prometheus service discovery.
 //
 // Returns:
 // - panelgroup.Option: An option to add the configured panel to a panel group.
-func PrometheusTargets(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusTargets(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Targets",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -115,7 +115,7 @@ func PrometheusTargets(datasourceName string, labelMathers ...promql.LabelMatche
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("sum by (job, instance) (prometheus_sd_discovered_targets{job=~'$job',instance=~'$instance'})", labelMathers),
+				promql.SetLabelMatchers("sum by (job, instance) (prometheus_sd_discovered_targets{job=~'$job',instance=~'$instance'})", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{job}}:{{instance}}"),
 			),
@@ -132,11 +132,11 @@ func PrometheusTargets(datasourceName string, labelMathers ...promql.LabelMatche
 //
 // Parameters:
 // - datasourceName: The name of the Prometheus datasource.
-// - labelMathers: Optional PromQL label matchers to filter the metrics.
+// - labelMatchers: Optional PromQL label matchers to filter the metrics.
 //
 // Returns:
 // - panelgroup.Option: A panel option configured to display the average scrape interval duration.
-func PrometheusAverageScrapeIntervalDuration(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusAverageScrapeIntervalDuration(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Average Scrape Interval Duration",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -152,7 +152,7 @@ func PrometheusAverageScrapeIntervalDuration(datasourceName string, labelMathers
 		panel.AddQuery(
 			query.PromQL(
 				promql.SetLabelMatchers("rate(prometheus_target_interval_length_seconds_sum{job=~'$job',instance=~'$instance'}[5m]) / rate(prometheus_target_interval_length_seconds_count{job=~'$job',instance=~'$instance'}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{job}}:{{instance}} {{interval}} configured"),
@@ -166,7 +166,7 @@ func PrometheusAverageScrapeIntervalDuration(datasourceName string, labelMathers
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the queries.
-// - labelMathers: Optional PromQL label matchers to filter the metrics.
+// - labelMatchers: Optional PromQL label matchers to filter the metrics.
 //
 // The following Prometheus metrics are used:
 // - prometheus_target_scrapes_exceeded_body_size_limit_total: Number of times a scrape exceeded the body size limit.
@@ -176,7 +176,7 @@ func PrometheusAverageScrapeIntervalDuration(datasourceName string, labelMathers
 // - prometheus_target_scrapes_sample_out_of_order_total: Number of times a scrape had samples out of order.
 //
 // Each metric is aggregated by job and instance, and the rate is calculated over a 1-minute interval.
-func PrometheusScrapeFailures(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusScrapeFailures(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Scrape failures",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -186,35 +186,35 @@ func PrometheusScrapeFailures(datasourceName string, labelMathers ...promql.Labe
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_body_size_limit_total{job=~'$job',instance=~'$instance'}[1m]))", labelMathers),
+				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_body_size_limit_total{job=~'$job',instance=~'$instance'}[1m]))", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("exceeded body size limit: {{job}} {{instance}}"),
 			),
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_sample_limit_total{job=~'$job',instance=~'$instance'}[1m]))", labelMathers),
+				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_exceeded_sample_limit_total{job=~'$job',instance=~'$instance'}[1m]))", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("exceeded sample limit: {{job}} {{instance}}"),
 			),
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=~'$job',instance=~'$instance'}[1m]))", labelMathers),
+				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=~'$job',instance=~'$instance'}[1m]))", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("duplicate timestamp: {{job}} {{instance}}"),
 			),
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_bounds_total{job=~'$job',instance=~'$instance'}[1m]))", labelMathers),
+				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_bounds_total{job=~'$job',instance=~'$instance'}[1m]))", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("out of bounds: {{job}} {{instance}}"),
 			),
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_order_total{job=~'$job',instance=~'$instance'}[1m]))", labelMathers),
+				promql.SetLabelMatchers("sum by (job, instance) (rate(prometheus_target_scrapes_sample_out_of_order_total{job=~'$job',instance=~'$instance'}[1m]))", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("out of order: {{job}} {{instance}}"),
 			),
@@ -228,11 +228,11 @@ func PrometheusScrapeFailures(datasourceName string, labelMathers ...promql.Labe
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the query.
-// - labelMathers: A variadic parameter for Prometheus label matchers to filter the metric data.
+// - labelMatchers: A variadic parameter for Prometheus label matchers to filter the metric data.
 //
 // Returns:
 // - panelgroup.Option: A configured panel option for the appended samples visualization.
-func PrometheusAppendedSamples(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusAppendedSamples(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Appended Samples",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -242,7 +242,7 @@ func PrometheusAppendedSamples(datasourceName string, labelMathers ...promql.Lab
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("rate(prometheus_tsdb_head_samples_appended_total{job=~'$job',instance=~'$instance'}[5m])", labelMathers),
+				promql.SetLabelMatchers("rate(prometheus_tsdb_head_samples_appended_total{job=~'$job',instance=~'$instance'}[5m])", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{job}} {{instance}}"),
 			),
@@ -255,14 +255,14 @@ func PrometheusAppendedSamples(datasourceName string, labelMathers ...promql.Lab
 //
 // Parameters:
 // - datasourceName: The name of the Prometheus datasource to be used for the query.
-// - labelMathers: A variadic parameter of Prometheus label matchers to filter the query.
+// - labelMatchers: A variadic parameter of Prometheus label matchers to filter the query.
 //
 // The function queries the Prometheus metric `prometheus_tsdb_head_series` with the provided label matchers
 // and formats the series name as "{{job}} {{instance}} head series".
 //
 // Returns:
 // - panelgroup.Option: An option to add the configured panel to a panel group.
-func PrometheusHeadSeries(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusHeadSeries(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Head Series",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -272,7 +272,7 @@ func PrometheusHeadSeries(datasourceName string, labelMathers ...promql.LabelMat
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("prometheus_tsdb_head_series{job=~'$job',instance=~'$instance'}", labelMathers),
+				promql.SetLabelMatchers("prometheus_tsdb_head_series{job=~'$job',instance=~'$instance'}", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{job}} {{instance}} head series"),
 			),
@@ -287,11 +287,11 @@ func PrometheusHeadSeries(datasourceName string, labelMathers ...promql.LabelMat
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus datasource.
-//   - labelMathers: Optional PromQL label matchers to filter the metric.
+//   - labelMatchers: Optional PromQL label matchers to filter the metric.
 //
 // Returns:
 //   - panelgroup.Option: An option to add the "Head Chunks" panel to a panel group.
-func PrometheusHeadChunks(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusHeadChunks(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Head Chunks",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -301,7 +301,7 @@ func PrometheusHeadChunks(datasourceName string, labelMathers ...promql.LabelMat
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("prometheus_tsdb_head_chunks{job=~'$job',instance=~'$instance'}", labelMathers),
+				promql.SetLabelMatchers("prometheus_tsdb_head_chunks{job=~'$job',instance=~'$instance'}", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{job}} {{instance}} head chunks"),
 			),
@@ -316,11 +316,11 @@ func PrometheusHeadChunks(datasourceName string, labelMathers ...promql.LabelMat
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the query.
-// - labelMathers: A variadic parameter of Prometheus label matchers to filter the query.
+// - labelMatchers: A variadic parameter of Prometheus label matchers to filter the query.
 //
 // Returns:
 // - panelgroup.Option: An option to add the configured panel to a panel group.
-func PrometheusQueryRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusQueryRate(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Query Rate",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -330,7 +330,7 @@ func PrometheusQueryRate(datasourceName string, labelMathers ...promql.LabelMatc
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("rate(prometheus_engine_query_duration_seconds_count{job=~'$job',instance=~'$instance',slice='inner_eval'}[5m])", labelMathers),
+				promql.SetLabelMatchers("rate(prometheus_engine_query_duration_seconds_count{job=~'$job',instance=~'$instance',slice='inner_eval'}[5m])", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{job}} {{instance}}"),
 			),
@@ -346,11 +346,11 @@ func PrometheusQueryRate(datasourceName string, labelMathers ...promql.LabelMatc
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used for the query.
-// - labelMathers: Optional PromQL label matchers to filter the query.
+// - labelMatchers: Optional PromQL label matchers to filter the query.
 //
 // Returns:
 // - panelgroup.Option: A panel option configured with the specified settings.
-func PrometheusQueryStateDuration(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusQueryStateDuration(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Stage Duration",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithYAxis(timeSeriesPanel.YAxis{
@@ -365,7 +365,7 @@ func PrometheusQueryStateDuration(datasourceName string, labelMathers ...promql.
 		),
 		panel.AddQuery(
 			query.PromQL(
-				promql.SetLabelMatchers("max by (slice) (prometheus_engine_query_duration_seconds{quantile='0.9', job=~'$job',instance=~'$instance'})", labelMathers),
+				promql.SetLabelMatchers("max by (slice) (prometheus_engine_query_duration_seconds{quantile='0.9', job=~'$job',instance=~'$instance'})", labelMatchers),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{slice}}"),
 			),
@@ -380,12 +380,12 @@ func PrometheusQueryStateDuration(datasourceName string, labelMathers ...promql.
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus datasource to be used for the query.
-//   - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 //   - panelgroup.Option: An option that adds a panel to a panel group with the specified
 //     configuration for visualizing timestamp lag.
-func PrometheusRemoteStorageTimestampLag(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageTimestampLag(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Timestamp Lag",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -397,7 +397,7 @@ func PrometheusRemoteStorageTimestampLag(datasourceName string, labelMathers ...
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"(prometheus_remote_storage_highest_timestamp_in_seconds{instance=~'$instance'} -  ignoring(remote_name, url) group_right(instance) (prometheus_remote_storage_queue_highest_sent_timestamp_seconds{instance=~'$instance', url='$url'} != 0))",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -412,11 +412,11 @@ func PrometheusRemoteStorageTimestampLag(datasourceName string, labelMathers ...
 //
 // Parameters:
 // - datasourceName: The name of the data source to be used in the query.
-// - labelMathers: A variadic parameter for Prometheus label matchers to filter the query.
+// - labelMatchers: A variadic parameter for Prometheus label matchers to filter the query.
 //
 // Returns:
 // - panelgroup.Option: An option to add the configured panel to a panel group.
-func PrometheusRemoteStorageRateLag(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageRateLag(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Rate[5m]",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -428,7 +428,7 @@ func PrometheusRemoteStorageRateLag(datasourceName string, labelMathers ...promq
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"clamp_min(rate(prometheus_remote_storage_highest_timestamp_in_seconds{instance=~'$instance'}[5m])  - ignoring (remote_name, url) group_right(instance) rate(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{instance=~'$instance', url='$url'}[5m]), 0)",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -442,11 +442,11 @@ func PrometheusRemoteStorageRateLag(datasourceName string, labelMathers ...promq
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus datasource.
-//   - labelMathers: A variadic parameter for Prometheus label matchers.
+//   - labelMatchers: A variadic parameter for Prometheus label matchers.
 //
 // Returns:
 //   - panelgroup.Option: An option that adds the configured panel to a panel group.
-func PrometheusRemoteStorageSampleRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageSampleRate(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Rate, in vs. succeeded or dropped [5m]",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -458,7 +458,7 @@ func PrometheusRemoteStorageSampleRate(datasourceName string, labelMathers ...pr
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(prometheus_remote_storage_samples_in_total{instance=~'$instance'}[5m]) - ignoring(remote_name, url) group_right(instance) (rate(prometheus_remote_storage_succeeded_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_total{instance=~'$instance', url='$url'}[5m])) - (rate(prometheus_remote_storage_dropped_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_dropped_total{instance=~'$instance', url='$url'}[5m]))",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -473,11 +473,11 @@ func PrometheusRemoteStorageSampleRate(datasourceName string, labelMathers ...pr
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageCurrentShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageCurrentShards(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Current Shards",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -489,7 +489,7 @@ func PrometheusRemoteStorageCurrentShards(datasourceName string, labelMathers ..
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_remote_storage_shards{instance=~'$instance', url='$url'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -504,12 +504,12 @@ func PrometheusRemoteStorageCurrentShards(datasourceName string, labelMathers ..
 //
 // Parameters:
 //   - datasourceName: The name of the Prometheus datasource to be used in the query.
-//   - labelMathers: A variadic parameter of PromQL label matchers to filter the query.
+//   - labelMatchers: A variadic parameter of PromQL label matchers to filter the query.
 //
 // Returns:
 //
 //	A panelgroup.Option configured with the desired shards panel and query.
-func PrometheusRemoteStorageDesiredShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageDesiredShards(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Desired Shards",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -521,7 +521,7 @@ func PrometheusRemoteStorageDesiredShards(datasourceName string, labelMathers ..
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_remote_storage_shards_desired{instance=~'$instance', url='$url'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -536,11 +536,11 @@ func PrometheusRemoteStorageDesiredShards(datasourceName string, labelMathers ..
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageMaxShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageMaxShards(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Max Shards",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -552,7 +552,7 @@ func PrometheusRemoteStorageMaxShards(datasourceName string, labelMathers ...pro
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_remote_storage_shards_max{instance=~'$instance', url='$url'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -567,11 +567,11 @@ func PrometheusRemoteStorageMaxShards(datasourceName string, labelMathers ...pro
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageMinShards(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageMinShards(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Min Shards",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -583,7 +583,7 @@ func PrometheusRemoteStorageMinShards(datasourceName string, labelMathers ...pro
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_remote_storage_shards_min{instance=~'$instance', url='$url'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -598,11 +598,11 @@ func PrometheusRemoteStorageMinShards(datasourceName string, labelMathers ...pro
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageShardCapacity(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageShardCapacity(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Shard Capacity",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -614,7 +614,7 @@ func PrometheusRemoteStorageShardCapacity(datasourceName string, labelMathers ..
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_remote_storage_shard_capacity{instance=~'$instance', url='$url'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -629,11 +629,11 @@ func PrometheusRemoteStorageShardCapacity(datasourceName string, labelMathers ..
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStoragePendingSamples(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStoragePendingSamples(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Pending Samples",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -645,7 +645,7 @@ func PrometheusRemoteStoragePendingSamples(datasourceName string, labelMathers .
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_remote_storage_pending_samples{instance=~'$instance', url='$url'} or prometheus_remote_storage_samples_pending{instance=~'$instance', url='$url'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -660,11 +660,11 @@ func PrometheusRemoteStoragePendingSamples(datasourceName string, labelMathers .
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusTSDBCurrentSegment(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusTSDBCurrentSegment(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("TSDB Current Segment",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -676,7 +676,7 @@ func PrometheusTSDBCurrentSegment(datasourceName string, labelMathers ...promql.
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_tsdb_wal_segment_current{instance=~'$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}"),
@@ -691,11 +691,11 @@ func PrometheusTSDBCurrentSegment(datasourceName string, labelMathers ...promql.
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteWriteCurrentSegment(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteWriteCurrentSegment(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Remote Write Current Segment",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -707,7 +707,7 @@ func PrometheusRemoteWriteCurrentSegment(datasourceName string, labelMathers ...
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"prometheus_wal_watcher_current_segment{instance=~'$instance'}",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}"),
@@ -722,11 +722,11 @@ func PrometheusRemoteWriteCurrentSegment(datasourceName string, labelMathers ...
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageDroppedSamplesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageDroppedSamplesRate(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Dropped Samples Rate",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -738,7 +738,7 @@ func PrometheusRemoteStorageDroppedSamplesRate(datasourceName string, labelMathe
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(prometheus_remote_storage_dropped_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_dropped_total{instance=~'$instance', url='$url'}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -753,11 +753,11 @@ func PrometheusRemoteStorageDroppedSamplesRate(datasourceName string, labelMathe
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageFailedSamplesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageFailedSamplesRate(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Failed Samples",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -769,7 +769,7 @@ func PrometheusRemoteStorageFailedSamplesRate(datasourceName string, labelMather
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(prometheus_remote_storage_failed_samples_total{instance=~'$instance', url='$url'}[5m]) or rate(prometheus_remote_storage_samples_failed_total{instance=~'$instance', url='$url'}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -784,11 +784,11 @@ func PrometheusRemoteStorageFailedSamplesRate(datasourceName string, labelMather
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageRetriedSamplesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageRetriedSamplesRate(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Retried Samples",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -800,7 +800,7 @@ func PrometheusRemoteStorageRetriedSamplesRate(datasourceName string, labelMathe
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(prometheus_remote_storage_retried_samples_total{instance=~'$instance', url=~'$url'}[5m]) or rate(prometheus_remote_storage_samples_retried_total{instance=~'$instance', url=~'$url'}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),
@@ -815,11 +815,11 @@ func PrometheusRemoteStorageRetriedSamplesRate(datasourceName string, labelMathe
 //
 // Parameters:
 //   - datasourceName: The name of the data source to be used for the query.
-//   - labelMathers: A variadic list of PromQL label matchers to filter the metrics.
+//   - labelMatchers: A variadic list of PromQL label matchers to filter the metrics.
 //
 // Returns:
 //   - panelgroup.Option: The configured panel option.
-func PrometheusRemoteStorageEnqueueRetriesRate(datasourceName string, labelMathers ...promql.LabelMatcher) panelgroup.Option {
+func PrometheusRemoteStorageEnqueueRetriesRate(datasourceName string, labelMatchers ...promql.LabelMatcher) panelgroup.Option {
 	return panelgroup.AddPanel("Enqueue Retries",
 		timeSeriesPanel.Chart(
 			timeSeriesPanel.WithLegend(timeSeriesPanel.Legend{
@@ -831,7 +831,7 @@ func PrometheusRemoteStorageEnqueueRetriesRate(datasourceName string, labelMathe
 			query.PromQL(
 				promql.SetLabelMatchers(
 					"rate(prometheus_remote_storage_enqueue_retries_total{instance=~'$instance', url=~'$url'}[5m])",
-					labelMathers,
+					labelMatchers,
 				),
 				dashboards.AddQueryDataSource(datasourceName),
 				query.SeriesNameFormat("{{instance}}:{{remote_name}}:{{url}}"),

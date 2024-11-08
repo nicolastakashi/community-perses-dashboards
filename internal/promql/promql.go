@@ -11,8 +11,8 @@ type LabelMatcher struct {
 	Type  string
 }
 
-func SetLabelMatchers(query string, labelMathers []LabelMatcher) string {
-	for _, l := range labelMathers {
+func SetLabelMatchers(query string, labelMatchers []LabelMatcher) string {
+	for _, l := range labelMatchers {
 		query = LabelsSetPromQL(query, l.Type, l.Name, l.Value)
 	}
 	return query
