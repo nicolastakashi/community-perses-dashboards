@@ -2,7 +2,7 @@ module github.com/nicolastakashi/community-perses-dashboards
 
 go 1.23.0
 
-require github.com/perses/perses v0.49.0
+require github.com/perses/perses v0.50.0
 
 require (
 	github.com/dennwc/varint v1.0.0 // indirect
@@ -24,7 +24,7 @@ require (
 	github.com/prometheus/common v0.61.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/prometheus/prometheus v0.301.0
-	github.com/zitadel/oidc/v3 v3.32.1 // indirect
+	github.com/zitadel/oidc/v3 v3.33.1 // indirect
 	github.com/zitadel/schema v1.3.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/net v0.32.0 // indirect
