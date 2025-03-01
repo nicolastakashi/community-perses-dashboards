@@ -2,7 +2,7 @@ module github.com/nicolastakashi/community-perses-dashboards
 
 go 1.23.0
 
-require github.com/perses/perses v0.50.0
+require github.com/perses/perses v0.50.1
 
 require (
 	github.com/dennwc/varint v1.0.0 // indirect
